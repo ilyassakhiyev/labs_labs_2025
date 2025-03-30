@@ -1,216 +1,191 @@
-import pygame 
- 
- 
-WIDTH, HEIGHT = 1200, 800
-FPS = 90
-draw = False           
-radius = 2
-color = 'blue'           
-mode = 'pen'                
- 
-pygame.init() 
-screen = pygame.display.set_mode([WIDTH, HEIGHT])
+import pygame
+
+pygame.init()
+FPS = 120
+FramePerSec = pygame.time.Clock()
+
+win_x = 500
+win_y = 500
+
+win = pygame.display.set_mode((win_x, win_y))
 pygame.display.set_caption('Paint')
-clock = pygame.time.Clock()
-screen.fill(pygame.Color('white'))
-font = pygame.font.SysFont('None', 60)
- 
- 
-def drawLine(screen, start, end, width, color):
-    x1 = start[0] 
-    x2 = end[0] 
-    y1 = start[1] 
-    y2 = end[1] 
 
-    dx = abs(x1 - x2) 
-    dy = abs(y1 - y2) 
+class drawing(object):
 
-    A = y2 - y1
-    B = x1 - x2
-    C = x2 * y1 - x1 * y2 
+	def __init__(self):
+		self.color = (0, 0, 0)
+		self.width = 10
+		self.height = 10
+		self.rad = 6
+		self.tick = 0
+		self.time = 0
+		self.play = False
 
-    if dx > dy:
-        if x1 > x2: 
-            x1, x2 = x2, x1 
-            y1, y2 = y2, y1 
-        for x in range(x1, x2):
-            y = (-C - A * x) / B 
-            pygame.draw.circle(screen, pygame.Color(color), (x, y), width) 
+	def draw(self, win, pos):
+		pygame.draw.circle(win, self.color, (pos[0], pos[1]), self.rad)
+		if self.color == (255, 255, 255):
+			pygame.draw.circle(win, self.color, (pos[0], pos[1]), 20)
 
-    else: 
-        if y1 > y2: 
-            x1, x2 = x2, x1 
-            y1, y2 = y2, y1
-        for y in range(y1, y2):
-            x = (-C - B * y) / A
-            pygame.draw.circle(screen, pygame.Color(color), (x, y), width)
+	def click(self, win, list, list2):
+		pos = pygame.mouse.get_pos()
 
- 
- 
-def drawCircle(screen, start, end, width, color):
-    x1 = start[0]
-    x2 = end[0]
-    y1 = start[1]
-    y2 = end[1]
+		if pygame.mouse.get_pressed() == (1, 0, 0) and pos[0] < 400:
+			if pos[1] > 25:
+				self.draw(win, pos)
+		elif pygame.mouse.get_pressed() == (1, 0, 0):
+			for button in list:
+				if pos[0] > button.x and pos[0] < button.x + button.width:
+					if pos[1] > button.y and pos[1] < button.y + button.height:
+						self.color = button.color2
+			for button in list2:
+				if pos[0] > button.x and pos[0] < button.x + button.width:
+					if pos[1] > button.y and pos[1] < button.y + button.height:
+						if self.tick == 0:
+							if button.action == 1:
+								win.fill((255, 255, 255))
+								self.tick += 1
+							if button.action == 2 and self.rad > 4:
+								self.rad -= 1
+								self.tick += 1
+								pygame.draw.rect(
+									win, (255, 255, 255), (410, 308, 80, 35))
 
-    x = (x1 + x2) / 2
-    y = (y1 + y2) / 2
+							if button.action == 3 and self.rad < 20:
+								self.rad += 1
+								self.tick += 1
+								pygame.draw.rect(
+									win, (255, 255, 255), (410, 308, 80, 35))
 
-    radius = abs(x1 - x2) / 2
-    
-    pygame.draw.circle(screen, pygame.Color(color), (x, y), radius, width)
+							if button.action == 5 and self.play == False:
+								self.play = True
+								
+								self.time += 1
+							if button.action == 6:
+								self.play = False
+								self.time = 0
 
- 
- 
-def drawRectangle(screen, start, end, width, color): 
-    x1 = start[0]
-    x2 = end[0]
-    y1 = start[1]
-    y2 = end[1]
+		for button in list2:
+			if button.action == 4:
+				button.text = str(self.rad)
 
-    widthr = abs(x1 - x2)
-    height = abs(y1 - y2)
+			if button.action == 7 and self.play == True:
+				button.text = str(40 - (player1.time // 100))
+			if button.action == 7 and self.play == False:
+				button.text = 'Time'
 
-    if x2 > x1 and y2 > y1: 
-        pygame.draw.rect(screen, pygame.Color(color), (x1, y1, widthr, height), width)
-    if y2 > y1 and x1 > x2: 
-        pygame.draw.rect(screen, pygame.Color(color), (x2, y1, widthr, height), width)
-    if x1 > x2 and y1 > y2: 
-        pygame.draw.rect(screen, pygame.Color(color), (x2, y2, widthr, height), width)
-    if x2 > x1 and y1 > y2: 
-        pygame.draw.rect(screen, pygame.Color(color), (x1, y2, widthr, height), width)
+class button(object):
 
-     
- 
- 
-def drawSquare(screen, start, end, color): 
-    x1 = start[0] 
-    x2 = end[0] 
-    y1 = start[1] 
-    y2 = end[1] 
-    mn = min(abs(x2 - x1), abs(y2 - y1)) 
- 
- 
-    if x2 > x1 and y2 > y1: 
-        pygame.draw.rect(screen, pygame.Color(color), (x1, y1, mn, mn)) 
-    if y2 > y1 and x1 > x2: 
-        pygame.draw.rect(screen, pygame.Color(color), (x2, y1, mn, mn)) 
-    if x1 > x2 and y1 > y2: 
-        pygame.draw.rect(screen, pygame.Color(color), (x2, y2, mn, mn)) 
-    if x2 > x1 and y1 > y2: 
-        pygame.draw.rect(screen, pygame.Color(color), (x1, y2, mn, mn)) 
- 
-def drawRightTriangle(screen, start, end, color): 
-    x1 = start[0] 
-    x2 = end[0] 
-    y1 = start[1] 
-    y2 = end[1] 
-     
-    if x2 > x1 and y2 > y1: 
-        pygame.draw.polygon(screen, pygame.Color(color), ((x1, y1), (x2, y2), (x1, y2))) 
-    if y2 > y1 and x1 > x2: 
-        pygame.draw.polygon(screen, pygame.Color(color), ((x1, y1), (x2, y2), (x1, y2))) 
-    if x1 > x2 and y1 > y2: 
-        pygame.draw.polygon(screen, pygame.Color(color), ((x1, y1), (x2, y2), (x2, y1))) 
-    if x2 > x1 and y1 > y2: 
-        pygame.draw.polygon(screen, pygame.Color(color), ((x1, y1), (x2, y2), (x2, y1))) 
- 
- 
-def drawEquilateralTriangle(screen, start, end, width, color): 
-    x1 = start[0] 
-    x2 = end[0] 
-    y1 = start[1] 
-    y2 = end[1] 
- 
-    width_b = abs(x2 - x1) 
-    height = (3**0.5) * width_b / 2 
- 
-    if y2 > y1: 
-        pygame.draw.polygon(screen, pygame.Color(color), ((x1, y2), (x2, y2), ((x1 + x2) / 2, y2 - height)), width) 
-    else: 
-        pygame.draw.polygon(screen, pygame.Color(color), ((x1, y1), (x2, y1), ((x1 + x2) / 2, y1 - height))) 
-     
- 
-def drawRhombus(screen, start, end, width, color): 
-    x1 = start[0] 
-    x2 = end[0] 
-    y1 = start[1] 
-    y2 = end[1] 
-    pygame.draw.lines(screen, pygame.Color(color), True, (((x1 + x2) / 2, y1), (x1, (y1 + y2) / 2), ((x1 + x2) / 2, y2), (x2, (y1 + y2) / 2)), width) 
- 
-while True: 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT: 
-            exit()
+	def __init__(self, x, y, width, height, color, color2, outline=0, action=0, text=''):
+		self.x = x
+		self.y = y
+		self.height = height
+		self.width = width
+		self.color = color
+		self.outline = outline
+		self.color2 = color2
+		self.action = action
+		self.text = text
 
-        if event.type == pygame.KEYDOWN: 
-            if event.key == pygame.K_r: 
-                mode = 'rectangle'
-            if event.key == pygame.K_c: 
-                mode = 'circle'
-            if event.key == pygame.K_p: 
-                mode = 'pen'
-            if event.key == pygame.K_e: 
-                mode = 'erase'
-            if event.key == pygame.K_s: 
-                mode = 'square'
-            if event.key == pygame.K_q: 
-                screen.fill(pygame.Color('white'))
+	def draw(self, win):
 
-            if event.key == pygame.K_1: 
-                color = 'black'
-            if event.key == pygame.K_2: 
-                color = 'green'
-            if event.key == pygame.K_3: 
-                color = 'red'
-            if event.key == pygame.K_4: 
-                color = 'blue'
-            if event.key == pygame.K_5: 
-                color = 'yellow'
-            if event.key == pygame.K_t: 
-                mode = 'right_tri'
-            if event.key == pygame.K_u: 
-                mode = 'eq_tri'
-            if event.key == pygame.K_h: 
-                mode = 'rhombus'
-   
- 
-      
-        if event.type == pygame.MOUSEBUTTONDOWN:  
-            draw = True
-            if mode == 'pen': 
-                pygame.draw.circle(screen, pygame.Color(color), event.pos, radius)
-            prevPos = event.pos
+		pygame.draw.rect(win, self.color, (self.x, self.y,
+										self.width, self.height), self.outline)
+		font = pygame.font.SysFont('comicsans', 30)
+		text = font.render(self.text, 1, self.color2)
+		pygame.draw.rect(win, (255, 255, 255), (410, 446, 80, 35))
+		win.blit(text, (int(self.x+self.width/2-text.get_width()/2),
+						int(self.y+self.height/2-text.get_height()/2)))
 
- 
-        
-        if event.type == pygame.MOUSEBUTTONUP:  
-            if mode == 'rectangle': 
-                drawRectangle(screen, prevPos, event.pos, radius, color)
-            elif mode == 'circle': 
-                drawCircle(screen, prevPos, event.pos, radius, color)
-            elif mode == 'square': 
-                drawSquare(screen, prevPos, event.pos, color)
-            elif mode == 'right_tri': 
-                drawRightTriangle(screen, prevPos, event.pos, color)
-            elif mode == 'eq_tri': 
-                drawEquilateralTriangle(screen, prevPos, event.pos, radius, color)
-            elif mode == 'rhombus': 
-                drawRhombus(screen, prevPos, event.pos, radius, color)
-            draw = False
 
- 
-       
-        if event.type == pygame.MOUSEMOTION:
-            if draw and mode == 'pen': 
-                drawLine(screen, lastPos, event.pos, radius, color)
-            elif draw and mode == 'erase': 
-                drawLine(screen, lastPos, event.pos, radius, 'white')
-            lastPos = event.pos
+def drawHeader(win):
 
-    pygame.draw.rect(screen, pygame.Color('white'), (5, 5, 115, 75))
-    renderRadius = font.render(str(radius), True, pygame.Color(color))
-    screen.blit(renderRadius, (5, 5))
- 
-    pygame.display.flip()
-    clock.tick(FPS)
+	pygame.draw.rect(win, (175, 171, 171), (0, 0, 500, 25))
+	pygame.draw.rect(win, (0, 0, 0), (0, 0, 400, 25), 2)
+	pygame.draw.rect(win, (0, 0, 0), (400, 0, 100, 25), 2)
+
+	font = pygame.font.SysFont('comicsans', 30)
+
+	canvasText = font.render('Пэйнт', 1, (0, 0, 0))
+	win.blit(canvasText, (int(200 - canvasText.get_width() / 2),
+						int(26 / 2 - canvasText.get_height() / 2) + 2))
+
+	toolsText = font.render('Tools', 1, (0, 0, 0))
+	win.blit(toolsText, (int(450 - toolsText.get_width() / 2),
+						int(26 / 2 - toolsText.get_height() / 2 + 2)))
+
+
+def draw(win):
+	player1.click(win, Buttons_color, Buttons_other)
+
+	pygame.draw.rect(win, (0, 0, 0), (400, 0, 100, 500),
+					2)
+	pygame.draw.rect(win, (255, 255, 255), (400, 0, 100, 500),)
+	pygame.draw.rect(win, (0, 0, 0), (0, 0, 400, 500),
+					2)
+	drawHeader(win)
+
+	for button in Buttons_color:
+		button.draw(win)
+
+	for button in Buttons_other:
+		button.draw(win)
+
+	pygame.display.update()
+
+
+def main_loop():
+	run = True
+	while run:
+		keys = pygame.key.get_pressed()
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
+				run = False
+
+		draw(win)
+
+		if 0 < player1.tick < 40:
+			player1.tick += 1
+		else:
+			player1.tick = 0
+
+		if 0 < player1.time < 4001:
+			player1.time += 1
+		elif 4000 < player1.time < 4004:
+
+			player1.time = 4009
+		else:
+			player1.time = 0
+			player1.play = False
+
+	pygame.quit()
+
+
+
+player1 = drawing()
+
+win.fill((255, 255, 255))
+pos = (0, 0)
+
+redButton = button(453, 30, 40, 40, (255, 0, 0), (255, 0, 0))
+blueButton = button(407, 30, 40, 40, (0, 0, 255), (0, 0, 255))
+greenButton = button(407, 76, 40, 40, (0, 255, 0), (0, 255, 0))
+orangeButton = button(453, 76, 40, 40, (255, 192, 0), (255, 192, 0))
+yellowButton = button(407, 122, 40, 40, (255, 255, 0), (255, 255, 0))
+purpleButton = button(453, 122, 40, 40, (112, 48, 160), (112, 48, 160))
+blackButton = button(407, 168, 40, 40, (0, 0, 0), (0, 0, 0))
+whiteButton = button(453, 168, 40, 40, (0, 0, 0), (255, 255, 255), 1)
+
+clrButton = button(407, 214, 86, 40, (201, 201, 201), (0, 0, 0), 0, 1, 'Clear')
+
+smallerButton = button(407, 260, 40, 40, (201, 201, 201), (0, 0, 0), 0, 2, '-')
+biggerButton = button(453, 260, 40, 40, (201, 201, 201), (0, 0, 0), 0, 3, '+')
+sizeDisplay = button(407, 306, 86, 40, (0, 0, 0), (0, 0, 0), 1, 4, 'Size')
+
+
+Buttons_color = [blueButton, redButton, greenButton, orangeButton,
+				yellowButton, purpleButton, blackButton, whiteButton]
+Buttons_other = [clrButton, smallerButton, biggerButton,
+				sizeDisplay]
+
+main_loop()
+FramePerSec.tick(FPS)
