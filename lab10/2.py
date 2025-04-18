@@ -65,6 +65,9 @@ def update(num, user_name, numb):
             print("Номер не найден.")
 
 def export_to_csv(file_name='exported_data.csv'):
+    if not file_name.endswith('.csv'):
+        file_name += '.csv'
+
     select_query = "SELECT user_id, user_name, numb FROM basetry ORDER BY user_id;"
     cursor.execute(select_query)
     rows = cursor.fetchall()
@@ -75,7 +78,7 @@ def export_to_csv(file_name='exported_data.csv'):
         for row in rows:
             writer.writerow(row)
 
-    print(f"Данные успешно экспортированы в CSV файл: {file_name}")
+    print(f"✅ Данные экспортированы в файл: {file_name}")
 
 
 def delete_user(user_name):   
