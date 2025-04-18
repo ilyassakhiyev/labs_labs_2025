@@ -36,33 +36,42 @@ def insert_user(user_name, numb):
     print(f"Пользователь добавлен: ID = {user_data[0]}, Имя = {user_data[1]}, Number = {user_data[2]}")
     return user_data[0]  # Возвращаем ID нового пользователя
 
-def update(num, user_name, numb):
-    if num == 1:
-         update_query = """
-            UPDATE basetry
-            SET numb = %s
-            WHERE user_name = %s
-            RETURNING user_id, user_name, numb;
-            """
-    elif num == 2:
-        update_query = """
-            UPDATE basetry
-            SET user_name = %s
-            WHERE numb = %s
-            RETURNING user_id, user_name, num;
-            """
+def update_username(old_name, new_name, conn):
+    update_query = """
+        UPDATE basetry
+        SET user_name = %s
+        WHERE user_name = %s
+        RETURNING user_id, user_name, numb;
+    """
+    
+    with conn.cursor() as cur:
+        cur.execute(update_query, (new_name, old_name))
+        user_data = cur.fetchone()
+        conn.commit()
+        
+        if user_data:
+            print(f"Данные обновлены: ID = {user_data[0]}, Имя = {user_data[1]}, Новые номеры = {user_data[2]}")
+        else:
+            print("Пользователь с таким именем не найден.")
 
-    cursor.execute(update_query, (user_name, numb))  # Здесь порядок параметров был неверен
-    conn.commit()
-    user_data = cursor.fetchone()
+def update_numb(old_numb, new_numb, conn):
+    update_query = """
+        UPDATE basetry
+        SET numb = %s
+        WHERE numb = %s
+        RETURNING user_id, user_name, numb;
+    """
+    
+    with conn.cursor() as cur:
+        cur.execute(update_query, (new_numb, old_numb))
+        user_data = cur.fetchone()
+        conn.commit()
+        
+        if user_data:
+            print(f"Данные обновлены: ID = {user_data[0]}, Имя = {user_data[1]}, Новый номер = {user_data[2]}")
+        else:
+            print("Пользователь с таким номером не найден.")
 
-    if user_data:
-        print(f"Данные обновлены: ID = {user_data[0]}, Имя = {user_data[1]}, Новые номеры = {user_data[2]}")
-    else:
-        if num == 1:
-            print("Пользователь не найден.")
-        elif num == 2:
-            print("Номер не найден.")
 
 def export_to_csv(file_name='exported_data.csv'):
     if not file_name.endswith('.csv'):
@@ -107,10 +116,6 @@ def get_users_sorted_by_number():
     for row in rows:
         print(f"ID: {row[0]}, Имя: {row[1]}, Номер: {row[2]}")
 
-
-
-
-
 if __name__ == '__main__':
     oper = input("Введите операцию (1 - добавить, 2 - удалить, 3 - обновить, 4 - получить всех, 5 - конвертировать в CSV-файл): ")
     if oper == '1':
@@ -128,16 +133,15 @@ if __name__ == '__main__':
     elif oper == '3':
         num = int(input("Введите 1 - обновить номер, 2 - обновить имя: "))
         if num == 1:
-            user_name = input("Введите имя: ")
-            numb = int(input("Введите новый номер телефона: "))
-            update(num, user_name, numb)
+            old_numb = int(input("Введите старый номер телефона: "))
+            new_numb = int(input("Введите новый номер телефона: "))
+            update_numb(old_numb, new_numb, conn)
         elif num == 2:
-            numb = int(input("Введите номер телефона: "))
-            user_name = input("Введите новое имя: ")
-            update(num, user_name, numb)
+            old_name = input("Введите старое имя: ")
+            new_name = input("Введите новое имя: ")
+            update_username(old_name, new_name, conn)
     elif oper == '4':
         get_users_sorted_by_number()
-
     elif oper == '5':
         file_name = input("Введите имя CSV файла (по умолчанию 'exported_data.csv'): ")
         if not file_name:
@@ -145,4 +149,3 @@ if __name__ == '__main__':
         export_to_csv(file_name)
     else:
         print("Неверная операция.")
-
